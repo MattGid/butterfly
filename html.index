@@ -346,11 +346,13 @@
         
         <div class="control-group">
             <label>Strength</label>
+            <!-- REDUCED DEFAULT BLOOM to 0.15 -->
             <input type="range" id="inp-bloom-strength" min="0" max="5" step="0.1" value="0.15">
         </div>
         
         <div class="control-group">
             <label>Radius</label>
+            <!-- REDUCED DEFAULT RADIUS -->
             <input type="range" id="inp-bloom-radius" min="0" max="2" step="0.01" value="0.05">
         </div>
 
@@ -730,6 +732,13 @@
         }
     }
 
+    // --- Helper to safely add listeners ---
+    function safeAddListener(id, event, handler) {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(event, handler);
+        // else console.warn('Element not found:', id);
+    }
+
     // --- Init & Loop ---
 
     function init() {
@@ -846,27 +855,29 @@
         spawnSwarm();
 
         // Listeners
-        document.getElementById('btn-spawn').addEventListener('click', spawnButterfly);
-        document.getElementById('btn-swarm').addEventListener('click', spawnSwarm);
-        document.getElementById('btn-clear').addEventListener('click', clearButterflies);
-        document.getElementById('inp-size').addEventListener('input', (e) => { document.getElementById('val-size').textContent = e.target.value; });
-        document.getElementById('inp-hdri').addEventListener('change', handleEnvironmentUpload);
-        document.getElementById('inp-music').addEventListener('change', (e) => {
+        safeAddListener('btn-spawn', 'click', spawnButterfly);
+        safeAddListener('btn-swarm', 'click', spawnSwarm);
+        safeAddListener('btn-clear', 'click', clearButterflies);
+        safeAddListener('inp-size', 'input', (e) => { document.getElementById('val-size').textContent = e.target.value; });
+        safeAddListener('inp-hdri', 'change', handleEnvironmentUpload);
+        safeAddListener('inp-music', 'change', (e) => {
             const file = e.target.files[0]; if(!file) return;
             const url = URL.createObjectURL(file); audioEl.src = url;
             document.getElementById('music-controls').style.display = 'block';
         });
-        document.getElementById('btn-music-play').addEventListener('click', () => {
+        safeAddListener('btn-music-play', 'click', () => {
             setupAudio(); if(audioContext && audioContext.state === 'suspended') audioContext.resume();
             if(audioEl.paused) audioEl.play().catch(e=>console.log(e)); else audioEl.pause();
         });
-        document.getElementById('chk-audio-sync').addEventListener('change', (e) => { isAudioSync = e.target.checked; });
-        document.getElementById('inp-audio-sens').addEventListener('input', (e) => { dropThreshold = parseInt(e.target.value); });
+        safeAddListener('chk-audio-sync', 'change', (e) => { isAudioSync = e.target.checked; });
+        safeAddListener('inp-audio-sens', 'input', (e) => { dropThreshold = parseInt(e.target.value); });
         
-        document.getElementById('btn-start-exp').addEventListener('click', () => {
+        safeAddListener('btn-start-exp', 'click', () => {
             const overlay = document.getElementById('start-overlay'); overlay.style.opacity = '0';
             setTimeout(() => overlay.style.display = 'none', 800);
             bloomPass.strength = 0.1; document.getElementById('inp-bloom-strength').value = 0.1;
+            
+            // Remove autoCycle logic
             
             setupAudio(); if(audioContext && audioContext.state === 'suspended') audioContext.resume();
             if(audioEl.src) audioEl.play().catch(e=>console.log(e));
@@ -879,21 +890,29 @@
             document.getElementById('btn-view-fly').classList.add('active');
         });
 
-        document.getElementById('ui-toggle').addEventListener('click', () => { document.getElementById('ui-container').classList.toggle('ui-hidden'); });
+        safeAddListener('ui-toggle', 'click', () => { document.getElementById('ui-container').classList.toggle('ui-hidden'); });
         
-        document.getElementById('inp-light-size').addEventListener('input', (e) => { updateLightSize(parseFloat(e.target.value)); });
+        safeAddListener('inp-light-size', 'input', (e) => { updateLightSize(parseFloat(e.target.value)); });
         
-        document.getElementById('inp-bloom-threshold').addEventListener('input', (e) => { bloomPass.threshold = parseFloat(e.target.value); });
-        document.getElementById('inp-bloom-strength').addEventListener('input', (e) => { bloomPass.strength = parseFloat(e.target.value); });
-        document.getElementById('inp-bloom-radius').addEventListener('input', (e) => { bloomPass.radius = parseFloat(e.target.value); });
-        document.getElementById('inp-chroma').addEventListener('input', (e) => { immersivePass.uniforms['chromaticAberration'].value = parseFloat(e.target.value); });
-        document.getElementById('inp-vignette').addEventListener('input', (e) => { immersivePass.uniforms['vignetteDarkness'].value = parseFloat(e.target.value); });
-        document.getElementById('inp-grain').addEventListener('input', (e) => { if (filmPass) filmPass.uniforms['nIntensity'].value = parseFloat(e.target.value); });
+        // Remove light controls for individual lights as they don't exist anymore
+        // document.getElementById('chk-light-1').addEventListener('change', (e) => toggleLight(0, e.target.checked));
+        // document.getElementById('chk-light-2').addEventListener('change', (e) => toggleLight(1, e.target.checked));
+        // document.getElementById('chk-light-3').addEventListener('change', (e) => toggleLight(2, e.target.checked));
         
-        document.getElementById('btn-view-orbit').addEventListener('click', () => setView('orbit'));
-        document.getElementById('btn-view-top').addEventListener('click', () => setView('top'));
-        document.getElementById('btn-view-side').addEventListener('click', () => setView('side'));
-        document.getElementById('btn-view-front').addEventListener('click', () => setView('front'));
+        // Remove auto cycle listener
+        // document.getElementById('chk-auto-cycle').addEventListener('change', (e) => { autoCycle = e.target.checked; nextCycleTime = 0; });
+        
+        safeAddListener('inp-bloom-threshold', 'input', (e) => { bloomPass.threshold = parseFloat(e.target.value); });
+        safeAddListener('inp-bloom-strength', 'input', (e) => { bloomPass.strength = parseFloat(e.target.value); });
+        safeAddListener('inp-bloom-radius', 'input', (e) => { bloomPass.radius = parseFloat(e.target.value); });
+        safeAddListener('inp-chroma', 'input', (e) => { immersivePass.uniforms['chromaticAberration'].value = parseFloat(e.target.value); });
+        safeAddListener('inp-vignette', 'input', (e) => { immersivePass.uniforms['vignetteDarkness'].value = parseFloat(e.target.value); });
+        safeAddListener('inp-grain', 'input', (e) => { if (filmPass) filmPass.uniforms['nIntensity'].value = parseFloat(e.target.value); });
+        
+        safeAddListener('btn-view-orbit', 'click', () => setView('orbit'));
+        safeAddListener('btn-view-top', 'click', () => setView('top'));
+        safeAddListener('btn-view-side', 'click', () => setView('side'));
+        safeAddListener('btn-view-front', 'click', () => setView('front'));
         
         const lensButtons = document.querySelectorAll('.lens-btn');
         lensButtons.forEach(btn => {
@@ -906,7 +925,7 @@
             });
         });
 
-        document.getElementById('btn-view-director').addEventListener('click', (e) => {
+        safeAddListener('btn-view-director', 'click', (e) => {
             directorMode = !directorMode; butterflyCamMode = false;
             document.getElementById('btn-view-butterfly').classList.remove('active');
             e.target.classList.toggle('active', directorMode);
@@ -916,7 +935,7 @@
             }
         });
         
-        document.getElementById('btn-view-butterfly').addEventListener('click', (e) => {
+        safeAddListener('btn-view-butterfly', 'click', (e) => {
             butterflyCamMode = !butterflyCamMode; directorMode = false;
             document.getElementById('btn-view-director').classList.remove('active');
             e.target.classList.toggle('active', butterflyCamMode);
@@ -924,7 +943,7 @@
             if(butterflyCamMode && audioEl.src && audioEl.paused) { setupAudio(); if (audioContext && audioContext.state === 'suspended') audioContext.resume(); audioEl.play().catch(e=>{}); }
         });
         
-        document.getElementById('btn-view-fly').addEventListener('click', (e) => {
+        safeAddListener('btn-view-fly', 'click', (e) => {
              directorMode = false; butterflyCamMode = false;
              document.getElementById('btn-view-director').classList.remove('active');
              document.getElementById('btn-view-butterfly').classList.remove('active');
@@ -933,10 +952,10 @@
              e.target.classList.add('active');
         });
         
-        document.getElementById('btn-slowmo').addEventListener('click', (e) => { e.target.classList.toggle('active'); baseTimeScale = e.target.classList.contains('active') ? 0.2 : 1.0; });
+        safeAddListener('btn-slowmo', 'click', (e) => { e.target.classList.toggle('active'); baseTimeScale = e.target.classList.contains('active') ? 0.2 : 1.0; });
         
         const modal = document.getElementById('embed-modal'); const overlay = document.getElementById('overlay-bg'); const txt = document.getElementById('embed-code');
-        document.getElementById('btn-embed').addEventListener('click', () => {
+        safeAddListener('btn-embed', 'click', () => {
             const clone = document.documentElement.cloneNode(true);
             const container = clone.querySelector('#container'); if(container) container.innerHTML = ''; 
             const cloneOverlay = clone.querySelector('#start-overlay'); if(cloneOverlay) cloneOverlay.style.display = 'flex';
@@ -954,8 +973,8 @@
             txt.value = `<iframe srcdoc='${escapedHtml}' width="100%" height="100%" frameborder="0" style="border:none; width:100%; height:100vh;"></iframe>`;
             modal.style.display = 'block'; overlay.style.display = 'block';
         });
-        document.getElementById('btn-close-modal').addEventListener('click', () => { modal.style.display = 'none'; overlay.style.display = 'none'; });
-        document.getElementById('btn-copy-code').addEventListener('click', () => { txt.select(); document.execCommand('copy'); });
+        safeAddListener('btn-close-modal', 'click', () => { modal.style.display = 'none'; overlay.style.display = 'none'; });
+        safeAddListener('btn-copy-code', 'click', () => { txt.select(); document.execCommand('copy'); });
 
         setupJoystick('joystick-left', 'knob-left', joyInput);
         setupJoystick('joystick-right', 'knob-right', camInput);
@@ -977,6 +996,9 @@
 
         attractors.push({ mesh, light, active, targetIntensity: active ? 1000 : 0, currentIntensity: active ? 1000 : 0, flickerPhase: 0 }); 
     }
+    
+    // Simplified Toggle Light (internal logic only)
+    function toggleLight(index, isActive) { const attractor = attractors[index]; attractor.active = isActive; attractor.targetIntensity = isActive ? 1000 : 0; if (isActive) { attractor.mesh.visible = true; attractor.light.visible = true; attractor.flickerPhase = 1.0; } }
     
     function updateLightSize(size) { attractors.forEach(att => { att.mesh.scale.setScalar(size); }); }
     function setView(type) { if(directorMode || butterflyCamMode || flyControls.isLocked) return; switch(type) { case 'top': camera.position.set(0, 80, 0); camera.lookAt(0, 0, 0); orbitControls.target.set(0, 0, 0); break; case 'side': camera.position.set(80, 0, 0); camera.lookAt(0, 0, 0); orbitControls.target.set(0, 0, 0); break; case 'front': camera.position.set(0, 0, 80); camera.lookAt(0, 0, 0); orbitControls.target.set(0, 0, 0); break; case 'orbit': default: camera.position.set(0, 10, 60); camera.lookAt(0, 0, 0); orbitControls.target.set(0, 0, 0); break; } orbitControls.update(); }
