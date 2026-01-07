@@ -346,13 +346,11 @@
         
         <div class="control-group">
             <label>Strength</label>
-            <!-- REDUCED DEFAULT BLOOM to 0.15 -->
             <input type="range" id="inp-bloom-strength" min="0" max="5" step="0.1" value="0.15">
         </div>
         
         <div class="control-group">
             <label>Radius</label>
-            <!-- REDUCED DEFAULT RADIUS -->
             <input type="range" id="inp-bloom-radius" min="0" max="2" step="0.01" value="0.05">
         </div>
 
@@ -764,6 +762,7 @@
         immersivePass.uniforms['chromaticAberration'].value = 0.005;
         immersivePass.uniforms['vignetteDarkness'].value = 0.6;
         const outputPass = new OutputPass();
+        
         composer = new EffectComposer( renderer );
         composer.addPass( renderScene );
         composer.addPass( bloomPass );
@@ -888,15 +887,7 @@
 
         document.getElementById('ui-toggle').addEventListener('click', () => { document.getElementById('ui-container').classList.toggle('ui-hidden'); });
         
-        // Remove light controls for individual lights as they don't exist anymore
-        // document.getElementById('chk-light-1').addEventListener('change', (e) => toggleLight(0, e.target.checked));
-        // document.getElementById('chk-light-2').addEventListener('change', (e) => toggleLight(1, e.target.checked));
-        // document.getElementById('chk-light-3').addEventListener('change', (e) => toggleLight(2, e.target.checked));
-        
         document.getElementById('inp-light-size').addEventListener('input', (e) => { updateLightSize(parseFloat(e.target.value)); });
-        
-        // Remove auto cycle listener
-        // document.getElementById('chk-auto-cycle').addEventListener('change', (e) => { autoCycle = e.target.checked; nextCycleTime = 0; });
         
         document.getElementById('inp-bloom-threshold').addEventListener('input', (e) => { bloomPass.threshold = parseFloat(e.target.value); });
         document.getElementById('inp-bloom-strength').addEventListener('input', (e) => { bloomPass.strength = parseFloat(e.target.value); });
