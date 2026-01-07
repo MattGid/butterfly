@@ -887,8 +887,6 @@
         
         document.getElementById('inp-light-size').addEventListener('input', (e) => { updateLightSize(parseFloat(e.target.value)); });
         
-        // Removed broken event listeners for light switches and auto-cycle
-        
         document.getElementById('inp-bloom-threshold').addEventListener('input', (e) => { bloomPass.threshold = parseFloat(e.target.value); });
         document.getElementById('inp-bloom-strength').addEventListener('input', (e) => { bloomPass.strength = parseFloat(e.target.value); });
         document.getElementById('inp-bloom-radius').addEventListener('input', (e) => { bloomPass.radius = parseFloat(e.target.value); });
