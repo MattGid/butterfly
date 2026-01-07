@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noir Butterfly Creator</title>
+    <style>
+        /* Noir/Monochrome Styling */
+        body { margin: 0; overflow: hidden; background-color: #000; color: #ddd; font-family: 'Courier New', Courier, monospace; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        
+        /* UI Toggle Button (Hamburger) */
+        #ui-toggle {
+            position: absolute; top: 20px; right: 20px;
+            width: 40px; height: 40px;
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        #ui-toggle:hover { background: #333; }
+
+        /* UI Styling */
+        #ui-container {
+            position: absolute; top: 70px; right: 20px;
+            background: rgba(10, 10, 10, 0.85); 
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            width: 280px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            backdrop-filter: blur(8px);
+            user-select: none;
+            z-index: 15;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            transition: transform 0.3s ease-in-out, opacity 0.3s;
+            transform-origin: top right;
+        }
+        
+        .ui-hidden {
+            transform: translateX(120%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h1 { margin: 0 0 15px 0; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 4px; color: #fff; text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        
+        .control-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.75rem; color: #888; margin-bottom: 5px; text-transform: uppercase; }
+        
+        input[type=range] { width: 100%; cursor: pointer; accent-color: #fff; background: #333; height: 4px; border-radius: 2px; }
+        input[type=color] { width: 100%; height: 30px; border: 1px solid #444; cursor: pointer; background: #000; }
+        
+        /* Checkbox/Switch Styling */
+        .light-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            background: #222;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #444;
+        }
+        .light-switch span { font-size: 0.8rem; font-weight: bold; color: #fff; }
+        .light-switch input { width: auto; height: auto; accent-color: #fff; cursor: pointer; transform: scale(1.5); }
+
+        /* File Input Styling */
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+            background: #111;
+            color: #aaa;
+            border: 1px dashed #444;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .file-upload:hover { background: #222; border-color: #fff; color: #fff; }
+        .file-upload input[type=file] {
+            position: absolute; top: 0; right: 0; min-width: 100%; min-height: 100%;
+            font-size: 100px; text-align: right; filter: alpha(opacity=0); opacity: 0; outline: none; background: white; cursor: inherit; display: block;
+        }
+
+        .btn-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        button {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #444;
+            background: #111;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            min-width: 45%;
+        }
+        button:hover { background: #333; box-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        button:active { transform: scale(0.98); }
+        
+        #btn-spawn { border-color: #888; }
+        #btn-swarm { border-color: #888; }
+        #btn-clear { border-color: #522; color: #eaa; }
+        #btn-embed { background: #223; border-color: #446; width: 100%; margin-top: 10px; }
+        
+        .view-btn { min-width: 18% !important; padding: 5px !important; font-size: 0.6rem !important; }
+        
+        /* Lens Buttons */
+        .lens-btn {
+            background: #222;
+            border: 1px solid #444;
+            color: #aaa;
+        }
+        .lens-btn.active {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* Cinematic Button */
+        #btn-view-director {
+            width: 100%; margin-top: 5px; 
+            background: linear-gradient(90deg, #333, #555); 
+            border: 1px solid #777;
+            color: #fff;
+        }
+        #btn-view-director.active {
+            background: linear-gradient(90deg, #aa0000, #ff0000);
+            border-color: #ff5555;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+        }
+        
+        /* Slow Mo Button */
+        #btn-slowmo {
+            width: 100%; margin-top: 5px;
+            border-color: #444;
+        }
+        #btn-slowmo.active {
+            background: #fff; color: #000;
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.8);
+        }
+        
+        /* Butterfly Cam Button Active State */
+        #btn-view-butterfly.active {
+            background: #44aaff;
+            color: #000;
+            border-color: #fff;
+            box-shadow: 0 0 10px #44aaff;
+        }
+        
+        /* Fly Mode Button */
+        #btn-view-fly.active {
+            background: linear-gradient(90deg, #008800, #00ff00);
+            border-color: #55ff55;
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        .counter { text-align: center; margin-top: 15px; font-size: 0.7rem; color: #666; letter-spacing: 1px; }
+
+        #overlay-info {
+            position: absolute; bottom: 20px; left: 20px;
+            color: rgba(255,255,255,0.3); font-size: 0.7rem;
+            pointer-events: none;
+            letter-spacing: 1px;
+        }
+        
+        /* Fade Overlay for Phase C */
+        #fade-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 50;
+            transition: opacity 0.5s;
+        }
+        
+        /* Controls Instructions */
+        #controls-hint {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; color: rgba(255,255,255,0.8);
+            font-size: 1.2rem; pointer-events: none; display: none;
+            text-shadow: 0 0 10px black; z-index: 60;
+        }
+
+        /* Love Text Overlay */
+        #love-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #000; /* Black letters */
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px; /* Small */
+            font-weight: bold;
+            display: none; /* Hidden by default */
+            z-index: 1000;
+            pointer-events: none;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Start Experience Overlay */
+        #start-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 12; 
+            backdrop-filter: blur(5px);
+            transition: opacity 0.8s;
+        }
+        #btn-start-exp {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(0,0,0,0.5);
+        }
+        #btn-start-exp:hover {
+            background: #fff; color: #000;
+            box-shadow: 0 0 20px #fff;
+        }
+
+        /* Joystick Styling */
+        #joystick-zone { position: absolute; bottom: 40px; right: 40px; width: 120px; height: 120px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; touch-action: none; z-index: 10; }
+        #joystick-knob { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); pointer-events: none; }
+        #joystick-label { position: absolute; bottom: 170px; right: 40px; width: 120px; text-align: center; color: #666; font-size: 0.7rem; pointer-events: none; text-transform: uppercase; }
+        
+        /* Modal Styling */
+        #embed-modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; border: 1px solid #555; padding: 20px; width: 400px; border-radius: 8px; box-shadow: 0 0 50px rgba(0,0,0,0.9); z-index: 100; color: #fff; font-family: 'Courier New', Courier, monospace; }
+        #embed-modal h3 { margin-top: 0; text-transform: uppercase; font-size: 1rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        #embed-code { width: 100%; height: 100px; background: #222; color: #aaa; border: 1px solid #444; padding: 10px; font-size: 0.8rem; margin: 15px 0; resize: none; box-sizing: border-box; }
+        #embed-actions { display: flex; gap: 10px; }
+        #overlay-bg { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 90; backdrop-filter: blur(2px); }
+        
+        .section-header { margin-top: 20px; margin-bottom: 10px; border-top: 1px solid #333; padding-top: 10px; font-size: 0.8rem; color: #fff; font-weight: bold; text-transform: uppercase; }
+    </style>
+    <!-- Import Maps for Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="container"></div>
+    <div id="fade-overlay"></div>
+    <div id="love-text">Love</div>
+    <div id="controls-hint">
+        WASD to Move • Q/E to Elevate • Shift to Boost<br>
+        <span style="font-size:0.8em; color:#aaa;">Press ESC to exit flight mode</span>
+    </div>
+
+    <!-- Start Experience Overlay -->
+    <div id="start-overlay">
+        <button id="btn-start-exp">ENTER VOID</button>
+    </div>
+
+    <!-- UI Toggle Button -->
+    <div id="ui-toggle">☰</div>
+
+    <!-- Creator UI -->
+    <div id="ui-container" class="ui-hidden">
+        <h1>Monochrome Lab</h1>
+        
+        <div class="control-group">
+            <label>Wing Luminance</label>
+            <input type="color" id="col-wing" value="#888888">
+        </div>
+        
+        <div class="control-group">
+            <label>Wing Glow</label>
+            <input type="color" id="col-pattern" value="#ffffff">
+        </div>
+
+        <div class="control-group">
+            <label>Size: <span id="val-size">1.0</span>x</label>
+            <input type="range" id="inp-size" min="0.5" max="2.0" step="0.1" value="1.0">
+        </div>
+
+        <div class="control-group">
+            <label>Flight Speed</label>
+            <input type="range" id="inp-speed" min="1" max="10" step="1" value="5">
+        </div>
+        
+        <!-- Camera Views -->
+        <div class="section-header">Camera Views</div>
+        <div class="btn-row" style="margin-top: 5px;">
+            <button class="view-btn" id="btn-view-orbit">Orbit</button>
+            <button class="view-btn" id="btn-view-top">Top</button>
+            <button class="view-btn" id="btn-view-side">Side</button>
+            <button class="view-btn" id="btn-view-front">Front</button>
+            <button class="view-btn" id="btn-view-butterfly">Ride</button>
+        </div>
+        <button id="btn-view-director">DIRECTOR MODE (15s Loop)</button>
+        <button id="btn-view-fly">START FREE FLIGHT (FPP)</button>
+        <button id="btn-slowmo">SLOW MOTION</button>
+        
+        <!-- Lenses -->
+        <div class="section-header">Lenses</div>
+        <div class="btn-row" style="margin-top: 5px;">
+            <button class="lens-btn active" id="btn-lens-35">35mm</button>
+            <button class="lens-btn" id="btn-lens-55">55mm</button>
+            <button class="lens-btn" id="btn-lens-70">70mm</button>
+        </div>
+
+        <!-- Light Controls -->
+        <div class="section-header">Attraction Light</div>
+        
+        <div class="control-group">
+            <label>Light Size</label>
+            <input type="range" id="inp-light-size" min="0.5" max="5.0" step="0.1" value="0.3">
+        </div>
+
+        <!-- Bloom Controls -->
+        <div class="section-header">Bloom Settings</div>
+
+        <div class="control-group">
+            <label>Threshold</label>
+            <input type="range" id="inp-bloom-threshold" min="0" max="1" step="0.01" value="0.25">
+        </div>
+        
+        <div class="control-group">
+            <label>Strength</label>
+            <!-- REDUCED DEFAULT BLOOM to 0.15 -->
+            <input type="range" id="inp-bloom-strength" min="0" max="5" step="0.1" value="0.15">
+        </div>
+        
+        <div class="control-group">
+            <label>Radius</label>
+            <!-- REDUCED DEFAULT RADIUS -->
+            <input type="range" id="inp-bloom-radius" min="0" max="2" step="0.01" value="0.05">
+        </div>
+
+        <!-- Lens Effects Controls -->
+        <div class="section-header">Lens Effects</div>
+        <div class="control-group">
+            <label>Chromatic Aberration</label>
+            <input type="range" id="inp-chroma" min="0" max="0.02" step="0.001" value="0.005">
+        </div>
+        <div class="control-group">
+            <label>Vignette</label>
+            <input type="range" id="inp-vignette" min="0" max="1" step="0.05" value="0.6">
+        </div>
+
+        <!-- Grain Controls -->
+        <div class="section-header">Film Grain</div>
+        <div class="control-group">
+            <label>Intensity</label>
+            <input type="range" id="inp-grain" min="0" max="2" step="0.05" value="0.15">
+        </div>
+
+        <!-- Audio Section -->
+        <div class="section-header">Soundtrack</div>
+        <div class="file-upload">
+            <span>Upload Music (.mp3 / .wav)</span>
+            <input type="file" id="inp-music" accept=".mp3,.wav,.ogg">
+        </div>
+        <div id="music-controls" style="display:none; margin-top:5px;">
+            <button id="btn-music-play" style="width:100%; border-color:#666;">Play / Pause</button>
+            <div class="light-switch" style="margin-top:5px; border:none; background:none; padding:0;">
+                <span style="color:#888;">Audio Sync FX</span>
+                <input type="checkbox" id="chk-audio-sync" checked>
+            </div>
+            <!-- NEW Sensitivity Slider -->
+            <div class="control-group" style="margin-bottom:0;">
+                <label>Beat Sensitivity</label>
+                <input type="range" id="inp-audio-sens" min="100" max="250" step="5" value="145">
+            </div>
+        </div>
+
+        <div class="section-header">Environment</div>
+        <div class="file-upload">
+            <span>Upload HDRI (.hdr / .jpg)</span>
+            <input type="file" id="inp-hdri" accept=".hdr,.jpg,.jpeg,.png">
+        </div>
+
+        <div class="btn-row">
+            <button id="btn-spawn">Create</button>
+            <button id="btn-swarm">Swarm (100)</button>
+            <button id="btn-clear">Clear</button>
+        </div>
+        
+        <button id="btn-embed">Get Instant Embed Code</button>
+        
+        <div class="counter" id="counter">Entities: 0</div>
+    </div>
+
+    <!-- Embed Modal -->
+    <div id="overlay-bg"></div>
+    <div id="embed-modal">
+        <h3>Instant Embed Code</h3>
+        <p style="font-size: 0.7rem; color: #888;">This code contains the full app. Copy and paste it anywhere:</p>
+        <textarea id="embed-code"></textarea>
+        <div id="embed-actions">
+            <button id="btn-copy-code">Copy</button>
+            <button id="btn-close-modal" style="background:#333; color:#aaa; border-color:#555;">Close</button>
+        </div>
+    </div>
+
+    <!-- Left Joystick: Turbulence -->
+    <div id="label-left" class="joystick-label">Wind / Turbulence</div>
+    <div id="joystick-left" class="joystick-zone">
+        <div id="knob-left" class="joystick-knob"></div>
+    </div>
+
+    <!-- Right Joystick: Camera Look -->
+    <div id="label-right" class="joystick-label">Camera Look</div>
+    <div id="joystick-right" class="joystick-zone">
+        <div id="knob-right" class="joystick-knob"></div>
+    </div>
+
+    <div id="overlay-info">
+        Mouse Drag to Rotate • Scroll to Zoom
+    </div>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'; 
+    import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+    
+    // Post-processing
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+    // --- Globals ---
+    let camera, scene, renderer, orbitControls, flyControls, composer, filmPass, bloomPass, immersivePass;
+    const butterflies = [];
+    const butterflyGeometryCache = {}; 
+    const attractors = []; 
+
+    // Joystick States
+    let joyInput = { x: 0, y: 0 }; // Turbulence
+    let camInput = { x: 0, y: 0 }; // Camera Look
+    
+    // Camera Modes
+    let directorMode = false;
+    let butterflyCamMode = false;
+    
+    // Free Flight Vars
+    let moveForward = false;
+    let moveBackward = false;
+    let moveLeft = false;
+    let moveRight = false;
+    let moveUp = false;
+    let moveDown = false;
+    let speedBoost = false;
+    let flightVelocity = new THREE.Vector3(); // Inertia Vector
+    
+    // Director Vars
+    let currentLookAt = new THREE.Vector3(0,0,0);
+    let currentCamPos = new THREE.Vector3(0,10,60);
+    let smoothSwarmCenter = new THREE.Vector3(0,0,0);
+    
+    // Time & Speed
+    let globalTime = 0;
+    let timeScale = 1.0;
+    let baseTimeScale = 1.0; // The manual toggle setting
+    const clock = new THREE.Clock();
+    
+    // Audio Context
+    let audioContext, analyser, dataArray;
+    let audioEl = new Audio();
+    audioEl.loop = true;
+    let audioSource = null;
+    let isAudioSync = true;
+    let dropThreshold = 145; 
+    
+    // Lenses
+    let targetFOV = 60; // default 35mm-ish
+
+    // --- Inline Shader Definition for Grain ---
+    const NoirGrainShader = {
+        name: 'NoirGrainShader',
+        uniforms: {
+            "tDiffuse": { value: null },
+            "nIntensity": { value: 0.15 }, 
+            "time": { value: 0.0 }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+            }`,
+        fragmentShader: `
+            uniform float nIntensity;
+            uniform float time;
+            uniform sampler2D tDiffuse;
+            varying vec2 vUv;
+            
+            float random(vec2 p) {
+                vec2 K1 = vec2(23.14069263277926, 2.665144142690225);
+                return fract(cos(dot(p,K1)) * 12345.6789);
+            }
+
+            void main() {
+                vec4 color = texture2D(tDiffuse, vUv);
+                float noise = random(vUv + time);
+                vec3 grain = vec3(noise);
+                color.rgb = mix(color.rgb, color.rgb + (grain - 0.5) * nIntensity, min(nIntensity * 2.0, 1.0));
+                gl_FragColor = vec4(color.rgb, color.a);
+            }`
+    };
+
+    // --- Inline Shader Definition for Chromatic Aberration & Vignette ---
+    const ImmersiveShader = {
+        name: 'ImmersiveShader',
+        uniforms: {
+            "tDiffuse": { value: null },
+            "chromaticAberration": { value: 0.005 },
+            "vignetteDarkness": { value: 0.6 },
+            "vignetteOffset": { value: 1.0 }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+            }`,
+        fragmentShader: `
+            uniform sampler2D tDiffuse;
+            uniform float chromaticAberration;
+            uniform float vignetteDarkness;
+            uniform float vignetteOffset;
+            varying vec2 vUv;
+
+            void main() {
+                vec2 dist = vUv - 0.5;
+                vec2 offset = dist * chromaticAberration;
+                float r = texture2D(tDiffuse, vUv + offset).r;
+                float g = texture2D(tDiffuse, vUv).g;
+                float b = texture2D(tDiffuse, vUv - offset).b;
+                vec3 color = vec3(r, g, b);
+                float len = length(dist);
+                float vignette = smoothstep(vignetteOffset, vignetteOffset - 0.6, len);
+                color = mix(color, color * vignette, vignetteDarkness);
+                gl_FragColor = vec4(color, 1.0);
+            }`
+    };
+
+    // --- Rain Shader REMOVED ---
+    
+    // --- Volumetric Beam Shader REMOVED ---
+
+    // --- Butterfly Class ---
+    class Butterfly {
+        constructor(scene, config) {
+            this.scene = scene;
+            this.config = config;
+            this.age = 0;
+            this.flightOffset = Math.random() * 100;
+            this.pathRadiusX = 5 + Math.random() * 5; 
+            this.pathRadiusY = 3 + Math.random() * 4; 
+            this.pathRadiusZ = 5 + Math.random() * 5;
+            this.speedMult = config.speed * 0.2; 
+            this.baseX = (Math.random() - 0.5) * 2.0;
+            this.baseY = (Math.random() - 0.5) * 2.0;
+            this.baseZ = (Math.random() - 0.5) * 2.0;
+            this.group = new THREE.Group();
+            
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.7 });
+            const wingMat = new THREE.MeshStandardMaterial({ 
+                color: config.wingColor, roughness: 0.2, metalness: 0.6, side: THREE.DoubleSide, 
+                transparent: true, opacity: 0.95, emissive: config.wingColor, emissiveIntensity: 0.3 
+            });
+            const patternMat = new THREE.MeshStandardMaterial({ 
+                color: config.patternColor, side: THREE.DoubleSide, emissive: config.patternColor, 
+                emissiveIntensity: 1.5, transparent: true, opacity: 0.9 
+            });
+
+            // 10x SMALLER SCALE
+            const scale = config.size * 0.1;
+            
+            // Body parts construction...
+            const abdomenGeo = new THREE.CapsuleGeometry(0.08 * scale, 0.5 * scale, 4, 8);
+            const abdomen = new THREE.Mesh(abdomenGeo, bodyMat);
+            abdomen.rotation.x = Math.PI / 2; abdomen.position.z = -0.1 * scale;
+            abdomen.castShadow = true; 
+            this.group.add(abdomen);
+            
+            const thoraxGeo = new THREE.CapsuleGeometry(0.1 * scale, 0.25 * scale, 4, 8);
+            const thorax = new THREE.Mesh(thoraxGeo, bodyMat);
+            thorax.rotation.x = Math.PI / 2; thorax.position.z = 0.25 * scale;
+            thorax.castShadow = true;
+            this.group.add(thorax);
+            
+            const headGeo = new THREE.SphereGeometry(0.09 * scale, 8, 8);
+            const head = new THREE.Mesh(headGeo, bodyMat);
+            head.position.z = 0.45 * scale;
+            head.castShadow = true;
+            this.group.add(head);
+
+            // Wings
+            this.leftWing = new THREE.Group();
+            this.rightWing = new THREE.Group();
+            this.leftWing.position.set(0.05 * scale, 0.05 * scale, 0.25 * scale);
+            this.rightWing.position.set(-0.05 * scale, 0.05 * scale, 0.25 * scale);
+            this.group.add(this.leftWing);
+            this.group.add(this.rightWing);
+
+            const species = config.species || 0;
+            const cacheKey = `wing_${species}_${scale.toFixed(2)}`;
+
+            if (!butterflyGeometryCache[cacheKey]) {
+                let fwShape = new THREE.Shape();
+                let hwShape = new THREE.Shape();
+                fwShape.moveTo(0,0); hwShape.moveTo(0,0);
+                
+                if (species === 0) {
+                    fwShape.bezierCurveTo(0.5 * scale, 0.1 * scale, 1.2 * scale, 0.8 * scale, 1.8 * scale, 1.2 * scale);
+                    fwShape.bezierCurveTo(1.8 * scale, 0.5 * scale, 1.2 * scale, -0.2 * scale, 0.2 * scale, -0.1 * scale);
+                    hwShape.bezierCurveTo(0.2 * scale, -0.2 * scale, 1.0 * scale, -0.5 * scale, 0.8 * scale, -1.2 * scale);
+                    hwShape.bezierCurveTo(0.4 * scale, -1.2 * scale, 0.2 * scale, -0.8 * scale, 0, 0);
+                } else if (species === 1) {
+                    fwShape.bezierCurveTo(0.6 * scale, 0.2 * scale, 1.5 * scale, 1.0 * scale, 2.0 * scale, 0.8 * scale);
+                    fwShape.lineTo(2.2 * scale, 0.2 * scale); 
+                    fwShape.bezierCurveTo(1.5 * scale, -0.3 * scale, 0.5 * scale, -0.2 * scale, 0, 0);
+                    hwShape.bezierCurveTo(0.1 * scale, -0.3 * scale, 0.8 * scale, -0.8 * scale, 0.6 * scale, -1.5 * scale);
+                    hwShape.lineTo(0.7 * scale, -2.0 * scale); 
+                    hwShape.lineTo(0.3 * scale, -1.2 * scale);
+                    hwShape.bezierCurveTo(0.2 * scale, -1.0 * scale, 0.1 * scale, -0.5 * scale, 0, 0);
+                } else {
+                    fwShape.bezierCurveTo(0.3 * scale, 0.1 * scale, 2.2 * scale, 0.9 * scale, 2.5 * scale, 0.6 * scale);
+                    fwShape.bezierCurveTo(2.5 * scale, 0.3 * scale, 1.0 * scale, -0.3 * scale, 0, 0);
+                    hwShape.bezierCurveTo(0.2 * scale, -0.1 * scale, 0.8 * scale, -0.3 * scale, 0.6 * scale, -0.8 * scale);
+                    hwShape.bezierCurveTo(0.4 * scale, -0.8 * scale, 0.1 * scale, -0.4 * scale, 0, 0);
+                }
+                fwShape.lineTo(0, 0);
+                butterflyGeometryCache[cacheKey] = { fore: new THREE.ShapeGeometry(fwShape), hind: new THREE.ShapeGeometry(hwShape) };
+            }
+            
+            const geos = butterflyGeometryCache[cacheKey];
+            const fwMesh = new THREE.Mesh(geos.fore, wingMat);
+            const hwMesh = new THREE.Mesh(geos.hind, wingMat);
+            fwMesh.castShadow = true;
+            hwMesh.castShadow = true;
+            fwMesh.rotation.x = -Math.PI / 2;
+            hwMesh.rotation.x = -Math.PI / 2;
+            hwMesh.position.set(0, 0, -0.05 * scale);
+            this.leftWing.add(fwMesh); this.leftWing.add(hwMesh);
+            const rightFw = fwMesh.clone(); const rightHw = hwMesh.clone();
+            rightFw.scale.x = -1; rightHw.scale.x = -1; 
+            this.rightWing.add(rightFw); this.rightWing.add(rightHw);
+            scene.add(this.group);
+        }
+
+        update(time, joystick) {
+            this.age += 0.01;
+            const activeLights = attractors.filter(l => l.currentIntensity > 50);
+            let targetBase = new THREE.Vector3(0, 0, 0);
+            if (activeLights.length > 0) {
+                let closestDist = Infinity; let closestLight = null;
+                const currentPos = this.group.position; 
+                activeLights.forEach(l => {
+                    const dist = currentPos.distanceTo(l.mesh.position);
+                    if (dist < closestDist) { closestDist = dist; closestLight = l; }
+                });
+                if (closestLight) targetBase.copy(closestLight.mesh.position);
+            } else {
+                targetBase.set(0, 10, 0);
+            }
+
+            this.baseX += (targetBase.x - this.baseX) * 0.02;
+            this.baseY += (targetBase.y - this.baseY) * 0.02;
+            this.baseZ += (targetBase.z - this.baseZ) * 0.02;
+
+            const t = (time + this.flightOffset) * this.speedMult;
+            let x = this.baseX + Math.sin(t) * this.pathRadiusX * Math.cos(t * 0.5);
+            let y = this.baseY + Math.cos(t * 0.5) * this.pathRadiusY + Math.sin(t * 2) * 1;
+            let z = this.baseZ + Math.sin(t) * this.pathRadiusZ * Math.sin(t * 0.5);
+            
+            const windStrength = 15.0; 
+            x += joystick.x * windStrength; z += joystick.y * windStrength; 
+            const mag = Math.hypot(joystick.x, joystick.y);
+            if (mag > 0.1) {
+                const turbT = time * 10.0;
+                x += Math.sin(turbT + this.flightOffset) * mag * 2.0;
+                y += Math.cos(turbT * 0.8 + this.flightOffset) * mag * 2.0;
+                z += Math.sin(turbT * 1.2 + this.flightOffset) * mag * 2.0;
+            }
+
+            const targetPos = new THREE.Vector3(x, y, z);
+            const futureT = t + 0.1;
+            let fx = this.baseX + Math.sin(futureT) * this.pathRadiusX * Math.cos(futureT * 0.5);
+            let fy = this.baseY + Math.cos(futureT * 0.5) * this.pathRadiusY + Math.sin(futureT * 2) * 1;
+            let fz = this.baseZ + Math.sin(futureT) * this.pathRadiusZ * Math.sin(futureT * 0.5);
+            fx += joystick.x * windStrength; fz += joystick.y * windStrength;
+            if (mag > 0.1) {
+                const turbT = (time + 0.1) * 10.0;
+                fx += Math.sin(turbT + this.flightOffset) * mag * 2.0;
+                fy += Math.cos(turbT * 0.8 + this.flightOffset) * mag * 2.0;
+                fz += Math.sin(turbT * 1.2 + this.flightOffset) * mag * 2.0;
+            }
+            const lookTarget = new THREE.Vector3(fx, fy, fz);
+            this.group.position.lerp(targetPos, 0.1);
+            this.group.lookAt(lookTarget);
+            const bank = Math.sin(time * 0.5 + this.flightOffset) * 0.5 + (joystick.x * -0.5);
+            this.group.rotation.z += bank;
+            const flapSpeed = this.config.flapSpeed + (mag * 10); 
+            const flapAngle = Math.sin(time * flapSpeed) * 0.5 + 0.2; 
+            this.leftWing.rotation.z = flapAngle; this.rightWing.rotation.z = -flapAngle;
+        }
+
+        dispose() {
+            this.scene.remove(this.group);
+            this.group.traverse((child) => { if (child.isMesh) { if (child.geometry && !butterflyGeometryCache[this.config.size]) child.geometry.dispose(); } });
+        }
+    }
+
+    // --- Init & Loop ---
+
+    function init() {
+        const container = document.getElementById( 'container' );
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color( 0x151515 ); // Slightly lighter for contrast
+        scene.fog = new THREE.FogExp2( 0x151515, 0.025 ); 
+
+        camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
+        camera.position.set( 0, 10, 60 );
+        renderer = new THREE.WebGLRenderer( { antialias: true } );
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        renderer.shadowMap.enabled = true; 
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
+        container.appendChild( renderer.domElement );
+
+        const renderScene = new RenderPass( scene, camera );
+        bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+        bloomPass.threshold = 0.25; bloomPass.strength = 0.15; bloomPass.radius = 0.05;
+        filmPass = new ShaderPass( NoirGrainShader );
+        filmPass.uniforms['nIntensity'].value = 0.15;
+        immersivePass = new ShaderPass( ImmersiveShader );
+        immersivePass.uniforms['chromaticAberration'].value = 0.005;
+        immersivePass.uniforms['vignetteDarkness'].value = 0.6;
+        const outputPass = new OutputPass();
+        composer = new EffectComposer( renderer );
+        composer.addPass( renderScene );
+        composer.addPass( bloomPass );
+        composer.addPass( immersivePass );
+        composer.addPass( filmPass );
+        composer.addPass( outputPass );
+
+        // FLOOR
+        const floorGeo = new THREE.PlaneGeometry(300, 300);
+        const floorMat = new THREE.MeshStandardMaterial({ 
+            color: 0x333333, // Dark grey so shadows are visible
+            roughness: 0.5, 
+            metalness: 0.5 
+        });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -10;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // CONTROLLERS SETUP
+        orbitControls = new OrbitControls( camera, renderer.domElement );
+        orbitControls.enableDamping = true;
+        orbitControls.dampingFactor = 0.05;
+        orbitControls.minDistance = 5;
+        orbitControls.maxDistance = 150;
+        
+        flyControls = new PointerLockControls( camera, document.body );
+
+        // Event Listeners for Flight Movement
+        const onKeyDown = function ( event ) {
+            switch ( event.code ) {
+                case 'ArrowUp':
+                case 'KeyW': moveForward = true; break;
+                case 'ArrowLeft':
+                case 'KeyA': moveLeft = true; break;
+                case 'ArrowDown':
+                case 'KeyS': moveBackward = true; break;
+                case 'ArrowRight':
+                case 'KeyD': moveRight = true; break;
+                case 'KeyQ': moveDown = true; break;
+                case 'KeyE': moveUp = true; break;
+                case 'ShiftLeft':
+                case 'ShiftRight': speedBoost = true; break;
+            }
+        };
+        const onKeyUp = function ( event ) {
+            switch ( event.code ) {
+                case 'ArrowUp':
+                case 'KeyW': moveForward = false; break;
+                case 'ArrowLeft':
+                case 'KeyA': moveLeft = false; break;
+                case 'ArrowDown':
+                case 'KeyS': moveBackward = false; break;
+                case 'ArrowRight':
+                case 'KeyD': moveRight = false; break;
+                case 'KeyQ': moveDown = false; break;
+                case 'KeyE': moveUp = false; break;
+                case 'ShiftLeft':
+                case 'ShiftRight': speedBoost = false; break;
+            }
+        };
+        document.addEventListener( 'keydown', onKeyDown );
+        document.addEventListener( 'keyup', onKeyUp );
+        
+        flyControls.addEventListener('lock', () => {
+            document.getElementById('controls-hint').style.display = 'block';
+            document.getElementById('ui-container').classList.add('ui-hidden');
+            orbitControls.enabled = false;
+        });
+        flyControls.addEventListener('unlock', () => {
+            document.getElementById('controls-hint').style.display = 'none';
+            document.getElementById('btn-view-fly').classList.remove('active');
+            document.getElementById('ui-container').classList.remove('ui-hidden');
+            orbitControls.enabled = true;
+        });
+
+        // Lights
+        const hemiLight = new THREE.HemisphereLight( 0x111111, 0x000000, 0.2 );
+        scene.add( hemiLight );
+        
+        // Single Wandering Light - SIZE REDUCED to 0.3
+        createAttractor("Wandering Light", 0, 10, 0, true, 0.3);
+        
+        spawnSwarm();
+
+        // Listeners
+        document.getElementById('btn-spawn').addEventListener('click', spawnButterfly);
+        document.getElementById('btn-swarm').addEventListener('click', spawnSwarm);
+        document.getElementById('btn-clear').addEventListener('click', clearButterflies);
+        document.getElementById('inp-size').addEventListener('input', (e) => { document.getElementById('val-size').textContent = e.target.value; });
+        document.getElementById('inp-hdri').addEventListener('change', handleEnvironmentUpload);
+        document.getElementById('inp-music').addEventListener('change', (e) => {
+            const file = e.target.files[0]; if(!file) return;
+            const url = URL.createObjectURL(file); audioEl.src = url;
+            document.getElementById('music-controls').style.display = 'block';
+        });
+        document.getElementById('btn-music-play').addEventListener('click', () => {
+            setupAudio(); if(audioContext && audioContext.state === 'suspended') audioContext.resume();
+            if(audioEl.paused) audioEl.play().catch(e=>console.log(e)); else audioEl.pause();
+        });
+        document.getElementById('chk-audio-sync').addEventListener('change', (e) => { isAudioSync = e.target.checked; });
+        document.getElementById('inp-audio-sens').addEventListener('input', (e) => { dropThreshold = parseInt(e.target.value); });
+        
+        document.getElementById('btn-start-exp').addEventListener('click', () => {
+            const overlay = document.getElementById('start-overlay'); overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 800);
+            bloomPass.strength = 0.1; document.getElementById('inp-bloom-strength').value = 0.1;
+            
+            // Remove autoCycle logic
+            
+            setupAudio(); if(audioContext && audioContext.state === 'suspended') audioContext.resume();
+            if(audioEl.src) audioEl.play().catch(e=>console.log(e));
+
+            directorMode = false; butterflyCamMode = false;
+            document.getElementById('btn-view-director').classList.remove('active');
+            document.getElementById('btn-view-butterfly').classList.remove('active');
+            orbitControls.enabled = false;
+            flyControls.lock();
+            document.getElementById('btn-view-fly').classList.add('active');
+        });
+
+        document.getElementById('ui-toggle').addEventListener('click', () => { document.getElementById('ui-container').classList.toggle('ui-hidden'); });
+        
+        // Remove light controls for individual lights as they don't exist anymore
+        // document.getElementById('chk-light-1').addEventListener('change', (e) => toggleLight(0, e.target.checked));
+        // document.getElementById('chk-light-2').addEventListener('change', (e) => toggleLight(1, e.target.checked));
+        // document.getElementById('chk-light-3').addEventListener('change', (e) => toggleLight(2, e.target.checked));
+        
+        document.getElementById('inp-light-size').addEventListener('input', (e) => { updateLightSize(parseFloat(e.target.value)); });
+        
+        // Remove auto cycle listener
+        // document.getElementById('chk-auto-cycle').addEventListener('change', (e) => { autoCycle = e.target.checked; nextCycleTime = 0; });
+        
+        document.getElementById('inp-bloom-threshold').addEventListener('input', (e) => { bloomPass.threshold = parseFloat(e.target.value); });
+        document.getElementById('inp-bloom-strength').addEventListener('input', (e) => { bloomPass.strength = parseFloat(e.target.value); });
+        document.getElementById('inp-bloom-radius').addEventListener('input', (e) => { bloomPass.radius = parseFloat(e.target.value); });
+        document.getElementById('inp-chroma').addEventListener('input', (e) => { immersivePass.uniforms['chromaticAberration'].value = parseFloat(e.target.value); });
+        document.getElementById('inp-vignette').addEventListener('input', (e) => { immersivePass.uniforms['vignetteDarkness'].value = parseFloat(e.target.value); });
+        document.getElementById('inp-grain').addEventListener('input', (e) => { if (filmPass) filmPass.uniforms['nIntensity'].value = parseFloat(e.target.value); });
+        
+        document.getElementById('btn-view-orbit').addEventListener('click', () => setView('orbit'));
+        document.getElementById('btn-view-top').addEventListener('click', () => setView('top'));
+        document.getElementById('btn-view-side').addEventListener('click', () => setView('side'));
+        document.getElementById('btn-view-front').addEventListener('click', () => setView('front'));
+        
+        const lensButtons = document.querySelectorAll('.lens-btn');
+        lensButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                lensButtons.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                if (e.target.id === 'btn-lens-35') targetFOV = 60;
+                else if (e.target.id === 'btn-lens-55') targetFOV = 45;
+                else if (e.target.id === 'btn-lens-70') targetFOV = 30;
+            });
+        });
+
+        document.getElementById('btn-view-director').addEventListener('click', (e) => {
+            directorMode = !directorMode; butterflyCamMode = false;
+            document.getElementById('btn-view-butterfly').classList.remove('active');
+            e.target.classList.toggle('active', directorMode);
+            orbitControls.enabled = !directorMode;
+            if (directorMode) { 
+                setupAudio(); if (audioContext && audioContext.state === 'suspended') audioContext.resume(); if (audioEl.src) audioEl.play().catch(e=>{}); 
+            }
+        });
+        
+        document.getElementById('btn-view-butterfly').addEventListener('click', (e) => {
+            butterflyCamMode = !butterflyCamMode; directorMode = false;
+            document.getElementById('btn-view-director').classList.remove('active');
+            e.target.classList.toggle('active', butterflyCamMode);
+            orbitControls.enabled = !butterflyCamMode;
+            if(butterflyCamMode && audioEl.src && audioEl.paused) { setupAudio(); if (audioContext && audioContext.state === 'suspended') audioContext.resume(); audioEl.play().catch(e=>{}); }
+        });
+        
+        document.getElementById('btn-view-fly').addEventListener('click', (e) => {
+             directorMode = false; butterflyCamMode = false;
+             document.getElementById('btn-view-director').classList.remove('active');
+             document.getElementById('btn-view-butterfly').classList.remove('active');
+             orbitControls.enabled = false;
+             flyControls.lock(); 
+             e.target.classList.add('active');
+        });
+        
+        document.getElementById('btn-slowmo').addEventListener('click', (e) => { e.target.classList.toggle('active'); baseTimeScale = e.target.classList.contains('active') ? 0.2 : 1.0; });
+        
+        const modal = document.getElementById('embed-modal'); const overlay = document.getElementById('overlay-bg'); const txt = document.getElementById('embed-code');
+        document.getElementById('btn-embed').addEventListener('click', () => {
+            const clone = document.documentElement.cloneNode(true);
+            const container = clone.querySelector('#container'); if(container) container.innerHTML = ''; 
+            const cloneOverlay = clone.querySelector('#start-overlay'); if(cloneOverlay) cloneOverlay.style.display = 'flex';
+            const cloneModal = clone.querySelector('#embed-modal'); if(cloneModal) cloneModal.style.display = 'none';
+            const cloneBg = clone.querySelector('#overlay-bg'); if(cloneBg) cloneBg.style.display = 'none';
+            
+            const cloneUI = clone.querySelector('#ui-container');
+            if(cloneUI) cloneUI.classList.add('ui-hidden');
+
+            const cloneGrain = clone.querySelector('#inp-grain');
+            if(cloneGrain) cloneGrain.setAttribute('value', '0.1');
+
+            let html = '<!DOCTYPE html>' + clone.outerHTML;
+            const escapedHtml = html.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            txt.value = `<iframe srcdoc='${escapedHtml}' width="100%" height="100%" frameborder="0" style="border:none; width:100%; height:100vh;"></iframe>`;
+            modal.style.display = 'block'; overlay.style.display = 'block';
+        });
+        document.getElementById('btn-close-modal').addEventListener('click', () => { modal.style.display = 'none'; overlay.style.display = 'none'; });
+        document.getElementById('btn-copy-code').addEventListener('click', () => { txt.select(); document.execCommand('copy'); });
+
+        setupJoystick('joystick-left', 'knob-left', joyInput);
+        setupJoystick('joystick-right', 'knob-right', camInput);
+        window.addEventListener( 'resize', onWindowResize );
+    }
+    
+    function setupAudio() { if(audioContext) return; const AudioContext = window.AudioContext || window.webkitAudioContext; audioContext = new AudioContext(); analyser = audioContext.createAnalyser(); analyser.fftSize = 512; dataArray = new Uint8Array(analyser.frequencyBinCount); audioSource = audioContext.createMediaElementSource(audioEl); audioSource.connect(analyser); analyser.connect(audioContext.destination); }
+    function updateAudioReactive() { if(!isAudioSync || !analyser) { timeScale += (baseTimeScale - timeScale) * 0.1; return; } analyser.getByteFrequencyData(dataArray); let bassSum = 0; for(let i=0; i<10; i++) bassSum += dataArray[i]; const bassLevel = bassSum / 10; let trebSum = 0; for(let i=100; i<150; i++) trebSum += dataArray[i]; const trebLevel = trebSum / 50; if (bassLevel > dropThreshold) { timeScale = 0.1; if(!flyControls.isLocked && !butterflyCamMode) { const shake = new THREE.Vector3((Math.random()-0.5), (Math.random()-0.5), (Math.random()-0.5)).multiplyScalar(0.5); camera.position.add(shake); } } else { timeScale += (baseTimeScale - timeScale) * 0.05; } const baseStrength = parseFloat(document.getElementById('inp-bloom-strength').value); const pulseMult = 1.0 + (trebLevel / 255) * 4.0; const targetStrength = baseStrength * pulseMult; bloomPass.strength += (targetStrength - bloomPass.strength) * 0.2; }
+    
+    function createAttractor(name, x, y, z, active, size = 1.5) { 
+        const geometry = new THREE.SphereGeometry(1.5, 32, 32); 
+        const material = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: active ? 10.0 : 0.0, toneMapped: false, transparent: true, opacity: active ? 1.0 : 0.0 }); 
+        const mesh = new THREE.Mesh(geometry, material); 
+        mesh.position.set(x, y, z); mesh.scale.setScalar(size); mesh.visible = active; scene.add(mesh); 
+        const light = new THREE.PointLight(0xffffff, active ? 1000 : 0, 100); 
+        light.shadow.mapSize.width = 2048; // High res shadows
+        light.shadow.mapSize.height = 2048;
+        light.position.set(x, y, z); light.castShadow = true; light.visible = active; scene.add(light); 
+
+        attractors.push({ mesh, light, active, targetIntensity: active ? 1000 : 0, currentIntensity: active ? 1000 : 0, flickerPhase: 0 }); 
+    }
+    
+    // Simplified Toggle Light (internal logic only)
+    function toggleLight(index, isActive) { const attractor = attractors[index]; attractor.active = isActive; attractor.targetIntensity = isActive ? 1000 : 0; if (isActive) { attractor.mesh.visible = true; attractor.light.visible = true; attractor.flickerPhase = 1.0; } }
+    
+    function updateLightSize(size) { attractors.forEach(att => { att.mesh.scale.setScalar(size); }); }
+    function setView(type) { if(directorMode || butterflyCamMode || flyControls.isLocked) return; switch(type) { case 'top': camera.position.set(0, 80, 0); camera.lookAt(0, 0, 0); orbitControls.target.set(0, 0, 0); break; case 'side': camera.position.set(80, 0, 0); camera.lookAt(0, 0, 0); orbitControls.target.set(0, 0, 0); break; case 'front': camera.position.set(0, 0, 80); camera.lookAt(0, 0, 0); orbitControls.target.set(0, 0, 0); break; case 'orbit': default: camera.position.set(0, 10, 60); camera.lookAt(0, 0, 0); orbitControls.target.set(0, 0, 0); break; } orbitControls.update(); }
+    function handleEnvironmentUpload(event) { const file = event.target.files[0]; if (!file) return; const url = URL.createObjectURL(file); const name = file.name.toLowerCase(); if (name.endsWith('.hdr')) { const loader = new RGBELoader(); loader.load(url, function(texture) { texture.mapping = THREE.EquirectangularReflectionMapping; scene.background = texture; scene.environment = texture; }); } else { const loader = new THREE.TextureLoader(); loader.load(url, function(texture) { texture.mapping = THREE.EquirectangularReflectionMapping; scene.background = texture; scene.environment = texture; }); } }
+    function getRandomGrey() { const v = Math.floor(Math.random() * 200) + 55; const hex = v.toString(16).padStart(2, '0'); return `#${hex}${hex}${hex}`; }
+    function spawnButterfly() { const species = Math.floor(Math.random() * 3); const config = { wingColor: document.getElementById('col-wing').value, patternColor: document.getElementById('col-pattern').value, size: parseFloat(document.getElementById('inp-size').value), speed: parseInt(document.getElementById('inp-speed').value), flapSpeed: parseInt(document.getElementById('inp-flap').value), species: species }; const b = new Butterfly(scene, config); butterflies.push(b); updateCounter(); }
+    function spawnSwarm() { for (let i = 0; i < 100; i++) { const species = Math.floor(Math.random() * 3); const randomSize = 0.5 + Math.random() * 1.0; const config = { wingColor: getRandomGrey(), patternColor: getRandomGrey(), size: randomSize, speed: 2 + Math.floor(Math.random() * 8), flapSpeed: 10 + Math.floor(Math.random() * 10), species: species }; const b = new Butterfly(scene, config); butterflies.push(b); } updateCounter(); }
+    function clearButterflies() { for (let b of butterflies) { b.dispose(); } butterflies.length = 0; updateCounter(); }
+    function updateCounter() { document.getElementById('counter').textContent = `Entities: ${butterflies.length}`; }
+    function setupJoystick(zoneId, knobId, output) { const zone = document.getElementById(zoneId); const knob = document.getElementById(knobId); let rect = zone.getBoundingClientRect(); let dragging = false; window.addEventListener('resize', () => { rect = zone.getBoundingClientRect(); }); function handleStart(e) { dragging = true; handleMove(e); } function handleMove(e) { if (!dragging) return; const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY; const centerX = rect.left + rect.width / 2; const centerY = rect.top + rect.height / 2; let dx = clientX - centerX; let dy = clientY - centerY; const radius = rect.width / 2 - 20; const dist = Math.hypot(dx, dy); if (dist > radius) { const ratio = radius / dist; dx *= ratio; dy *= ratio; } knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`; output.x = dx / radius; output.y = dy / radius; } function handleEnd() { dragging = false; knob.style.transform = `translate(-50%, -50%)`; output.x = 0; output.y = 0; } zone.addEventListener('mousedown', handleStart); window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', handleEnd); zone.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }); window.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }); window.addEventListener('touchend', (e) => { e.preventDefault(); handleEnd(e); }); }
+    function onWindowResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize( window.innerWidth, window.innerHeight ); composer.setSize( window.innerWidth, window.innerHeight ); }
+    function updateDirectorCamera(time) { let swarmCenter = new THREE.Vector3(); if (butterflies.length > 0) { butterflies.forEach(b => swarmCenter.add(b.group.position)); swarmCenter.divideScalar(butterflies.length); } else { swarmCenter.set(0,0,0); } smoothSwarmCenter.lerp(swarmCenter, 0.05); let activeLight = null; let maxInt = 0; attractors.forEach(l => { if(l.currentIntensity > maxInt) { maxInt = l.currentIntensity; activeLight = l; } }); const lightPos = activeLight ? activeLight.mesh.position : new THREE.Vector3(0,0,0); const virtualTarget = lightPos.clone().multiplyScalar(0.7).add(smoothSwarmCenter.clone().multiplyScalar(0.3)); const lookTarget = virtualTarget.clone().add(new THREE.Vector3(-5, 0, 0)); const loopTime = time % 15.0; let desiredPos = new THREE.Vector3(); let targetFOV = 45; let fadeOpacity = 0; const noise = new THREE.Vector3( Math.sin(time * 1.5) * 0.5 + Math.sin(time * 3.5) * 0.2, Math.cos(time * 1.3) * 0.5 + Math.sin(time * 4.1) * 0.2, Math.sin(time * 0.8) * 0.5 ).multiplyScalar(0.2); if (loopTime < 4.0) { const angle = time * 0.1; desiredPos.set(Math.sin(angle) * 80, 20, Math.cos(angle) * 80); targetFOV = 60; } else if (loopTime < 11.0) { const dir = new THREE.Vector3().subVectors(smoothSwarmCenter, lightPos).normalize(); if (dir.lengthSq() < 0.01) dir.set(0,0,1); desiredPos.copy(smoothSwarmCenter).add(dir.multiplyScalar(25)).add(new THREE.Vector3(0, 5, 0)); desiredPos.add(noise); targetFOV = 50; } else { desiredPos.copy(lightPos).add(new THREE.Vector3(3, 2, 3)); desiredPos.add(noise.multiplyScalar(0.2)); lookTarget.copy(smoothSwarmCenter); targetFOV = 35; if (loopTime > 14.0) { fadeOpacity = (loopTime - 14.0); } } currentCamPos.lerp(desiredPos, 0.05); currentLookAt.lerp(lookTarget, 0.05); const breath = Math.sin(time * 2.0) * 2.0; camera.fov += (targetFOV + breath - camera.fov) * 0.05; camera.updateProjectionMatrix(); camera.position.copy(currentCamPos); camera.lookAt(currentLookAt); document.getElementById('fade-overlay').style.opacity = fadeOpacity; }
+    function updateButterflyCamera(time) { if (butterflies.length === 0) return; const targetB = butterflies[0]; const relativeOffset = new THREE.Vector3(0, 2.0, 6.0); relativeOffset.applyQuaternion(targetB.group.quaternion); const shake = new THREE.Vector3( Math.sin(time * 25) * 0.05, Math.cos(time * 20) * 0.05, Math.sin(time * 18) * 0.02 ); const sway = new THREE.Vector3( Math.sin(time * 2) * 0.2, Math.cos(time * 1.5) * 0.1, 0 ); const camPos = targetB.group.position.clone().add(relativeOffset).add(shake).add(sway); const forward = new THREE.Vector3(0, 0, -5); forward.applyQuaternion(targetB.group.quaternion); const lookOffset = new THREE.Vector3( camInput.x * -10, camInput.y * 10, 0 ); lookOffset.applyQuaternion(targetB.group.quaternion); const finalLookTarget = targetB.group.position.clone().add(forward).add(lookOffset); camera.position.lerp(camPos, 0.05); if(!window.camLookSmoother) window.camLookSmoother = finalLookTarget.clone(); window.camLookSmoother.lerp(finalLookTarget, 0.1); camera.lookAt(window.camLookSmoother); camera.fov = 60 + Math.sin(time * 10) * 1.0; camera.updateProjectionMatrix(); }
+
+    function animate() {
+        requestAnimationFrame( animate );
+        const dt = clock.getDelta();
+        globalTime += dt * timeScale; 
+        const time = globalTime;
+        updateAudioReactive();
+        if (filmPass && filmPass.uniforms['time']) { filmPass.uniforms['time'].value = time; }
+        
+        // Single Wandering Light Animation
+        if (attractors.length > 0) {
+            const att = attractors[0]; // The Wandering Light
+            
+            let targetPos = new THREE.Vector3();
+
+            if (directorMode) {
+                const lx = Math.sin(time * 0.3) * 25;
+                const ly = 15 + Math.sin(time * 1.3) * 10;
+                const lz = Math.cos(time * 0.4) * 25;
+                targetPos.set(lx, ly, lz);
+                att.mesh.position.lerp(targetPos, 0.05); 
+            } else {
+                const camDir = new THREE.Vector3();
+                camera.getWorldDirection(camDir);
+                targetPos.copy(camera.position).add(camDir.multiplyScalar(30));
+                targetPos.x += Math.sin(time * 0.5) * 10;
+                targetPos.y += Math.cos(time * 0.3) * 5;
+                targetPos.z += Math.sin(time * 0.4) * 10;
+                if (targetPos.y < 5.0) targetPos.y = 5.0;
+                att.mesh.position.lerp(targetPos, 0.02);
+            }
+            
+            att.light.position.copy(att.mesh.position);
+            
+            // Flicker logic
+            let flickerMult = 1.0;
+            if (att.flickerPhase > 0) { att.flickerPhase -= 0.05; if (Math.random() > 0.5) flickerMult = 0.2; }
+            const target = att.targetIntensity * flickerMult;
+            att.currentIntensity += (target - att.currentIntensity) * 0.1;
+            att.light.intensity = att.currentIntensity;
+            att.mesh.material.emissiveIntensity = (att.currentIntensity / 1000) * 10.0;
+            att.mesh.material.opacity = (att.currentIntensity / 1000);
+            
+            if (att.currentIntensity < 1 && !att.active) { att.light.visible = false; att.mesh.visible = false; }
+        }
+
+        let maxLightInfluence = 0; const camDir = new THREE.Vector3(); camera.getWorldDirection(camDir);
+        attractors.forEach(att => { if (!att.active) return; const dist = camera.position.distanceTo(att.mesh.position); const toLight = att.mesh.position.clone().sub(camera.position).normalize(); const alignment = camDir.dot(toLight); if (alignment > 0) { const influence = (att.mesh.scale.x * 10 * bloomPass.strength) / (dist * dist); if (influence > maxLightInfluence) maxLightInfluence = influence; } });
+        const loveText = document.getElementById('love-text'); if (maxLightInfluence > 0.8) { loveText.style.display = 'block'; } else { loveText.style.display = 'none'; }
+
+        butterflies.forEach(b => b.update(time, joyInput));
+
+        // Smoothly interpolate current FOV to target FOV (Lens switching)
+        if (!butterflyCamMode) {
+             camera.fov += (targetFOV - camera.fov) * 0.05;
+             camera.updateProjectionMatrix();
+        }
+
+        if (directorMode) {
+            updateDirectorCamera(time);
+        } else if (butterflyCamMode) {
+            updateButterflyCamera(time);
+        } else if (flyControls.isLocked) {
+            const maxSpeed = 40.0 * (speedBoost ? 2.0 : 1.0) * timeScale;
+            const inputVector = new THREE.Vector3();
+            inputVector.z = Number(moveForward) - Number(moveBackward);
+            inputVector.x = Number(moveRight) - Number(moveLeft);
+            inputVector.y = Number(moveUp) - Number(moveDown);
+            inputVector.normalize();
+            inputVector.multiplyScalar(maxSpeed);
+            flightVelocity.lerp(inputVector, 0.04);
+            flyControls.moveForward(flightVelocity.z * dt);
+            flyControls.moveRight(flightVelocity.x * dt);
+            camera.position.y += flightVelocity.y * dt;
+            if (Math.abs(camInput.x) > 0.05) flyControls.getObject().rotation.y -= camInput.x * 0.05;
+            if (Math.abs(camInput.y) > 0.05) flyControls.getObject().rotation.x -= camInput.y * 0.05;
+        } else {
+            orbitControls.update();
+            document.getElementById('fade-overlay').style.opacity = 0;
+        }
+        
+        composer.render();
+    }
+
+    init();
+    animate();
+</script>
+</body>
+</html>
